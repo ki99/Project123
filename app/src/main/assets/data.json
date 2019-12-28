@@ -2,26 +2,26 @@
   "ContactAddress": [
     {
       "name": "ABC",
-      "phone": "010-1234-5678",
       "group": "친구",
+      "number": "010-1234-5678",
       "memo": 20
     },
     {
       "name": "DEF",
-      "phone": "010-4569-7889",
       "group": "가족",
+      "number": "010-4569-7889",
       "memo": 21
     },
     {
       "name": "GHI",
-      "phone": "010-1352-1212",
       "group": "친구",
+      "number": "010-1352-1212",
       "memo": 20
     },
     {
       "name": "JKL",
-      "phone": "010-8434-0328",
       "group": "사업",
+      "number": "010-8434-0328",
       "memo": 23
     }
   ]

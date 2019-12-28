@@ -1,38 +1,49 @@
 package com.example.practice.ui.main.First;
 
 public class Dictionary {
-    private String Id;
-    private String English;
-    private String Korean;
+    private String index;
+    private String name;
+    private String group;
+    private String number;
 
+    public Dictionary () {}
 
-    public Dictionary(String id, String english, String korean) {
-        this.Id = id;
-        this.English = english;
-        this.Korean = korean;
+    public Dictionary(String index, String name, String group, String number) {
+        this.index = index;
+        this.name = name;
+        this.group = group;
+        this.number = number;
     }
 
-    public String getId() {
-        return Id;
+    public String getIndex() {
+        return index;
     }
 
-    public void setId(String id) {
-        this.Id = id;
+    public void setIndex(String index) {
+        this.index = index;
     }
 
-    public String getEnglish() {
-        return English;
+    public String getName() {
+        return name;
     }
 
-    public void setEnglish(String english) {
-        English = english;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getKorean() {
-        return Korean;
+    public String getGroup() {
+        return group;
     }
 
-    public void setKorean(String korean) {
-        Korean = korean;
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
     }
 }
