@@ -58,7 +58,6 @@ public class FirstFragment extends Fragment {
 
     private FirstViewModel mViewModel;
     private ArrayList<Dictionary> Items;
-    private int index = 0;
 
     public static FirstFragment newInstance() {
         return new FirstFragment();
@@ -149,7 +148,7 @@ public class FirstFragment extends Fragment {
                     View v = LayoutInflater.from(getActivity()).inflate(R.layout.edittext, null, false);
                     builder.setView(v);
 
-                    final EditText editname = v.findViewById(R.id.editname); //view에는 button 존재x
+                    final EditText editname = v.findViewById(R.id.editname); //view에는 callbutton 존재x
                     final EditText editgroup = v.findViewById(R.id.editgroup);
                     final EditText editnumber = v.findViewById(R.id.editnumber);
                     final Button buttonsubmit = v.findViewById(R.id.button);
@@ -160,8 +159,8 @@ public class FirstFragment extends Fragment {
                             String strName = editname.getText().toString();
                             String strGroup = editgroup.getText().toString();
                             String strNumber = editnumber.getText().toString();
-                            index++;
-                            Dictionary dict = new Dictionary(index + "", strName, strGroup, strNumber);
+
+                            Dictionary dict = new Dictionary(strName, strGroup, strNumber);
                             Items.add(dict); // RecyclerView의 마지막 줄에 삽입
                             ra.notifyDataSetChanged();
                             dialog.dismiss();
@@ -211,7 +210,6 @@ public class FirstFragment extends Fragment {
 
         contactsList = new ArrayList<Dictionary>(hashlist);
         for (int i = 0; i < contactsList.size(); i++) {
-            contactsList.get(i).setIndex(++index + "");
             contactsList.get(i).setGroup("none");
         }
         if (cursor != null) {
@@ -259,9 +257,7 @@ public class FirstFragment extends Fragment {
 
             for (int i = 0; i < dictionaryArray.length(); i++) {
                 JSONObject dictObject = dictionaryArray.getJSONObject(i);
-                index++;
                 Dictionary dict = new Dictionary();
-                dict.setIndex(index + "");
                 dict.setName(dictObject.getString("name"));
                 dict.setGroup(dictObject.getString("group"));
                 dict.setNumber(dictObject.getString("number"));

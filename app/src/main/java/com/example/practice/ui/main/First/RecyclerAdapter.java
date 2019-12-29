@@ -28,18 +28,19 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
 
     // 아이템 뷰를 저장하는 뷰홀더 클래스.
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
-        protected TextView index;
         protected TextView name;
-        protected ImageButton button;
+        protected ImageButton callbutton;
+        protected ImageButton messagebutton;
         protected String group;
         protected String number;
 
         ViewHolder(View itemView) {
             super(itemView);
             // 뷰 객체에 대한 참조. (hold strong reference)
-            index = itemView.findViewById(R.id.text1);
             name = itemView.findViewById(R.id.text2);
-            button = itemView.findViewById(R.id.callButton);
+            callbutton = itemView.findViewById(R.id.callButton);
+            messagebutton = itemView.findViewById(R.id.messageButton);
+
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -52,12 +53,21 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             });
             itemView.setOnCreateContextMenuListener(this);
 
-            button.setOnClickListener(new View.OnClickListener() {
+            callbutton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent();
                     intent.setAction(Intent.ACTION_DIAL);
                     intent.setData(Uri.parse("tel:"+number));
+                    context.startActivity(intent);
+                }
+            });
+            messagebutton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent();
+                    intent.setAction(Intent.ACTION_SENDTO);
+                    intent.setData(Uri.parse("sms:"+number));
                     context.startActivity(intent);
                 }
             });
@@ -82,7 +92,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
                         View v = LayoutInflater.from(context)
                                 .inflate(R.layout.edittext, null, false);
                         builder.setView(v);
-                        final EditText editname = v.findViewById(R.id.editname); //view에는 button 존재x
+                        final EditText editname = v.findViewById(R.id.editname); //view에는 callbutton 존재x
                         final EditText editgroup = v.findViewById(R.id.editgroup);
                         final EditText editnumber = v.findViewById(R.id.editnumber);
                         final Button buttonsubmit = v.findViewById(R.id.button);
@@ -93,7 +103,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
                                 String strName = editname.getText().toString();
                                 String strGroup = editgroup.getText().toString();
                                 String strNumber = editnumber.getText().toString();
-                                Dictionary dict = new Dictionary(index.getText().toString(), strName, strGroup, strNumber);
+                                Dictionary dict = new Dictionary(strName, strGroup, strNumber);
                                 mData.set(getAdapterPosition(), dict); // RecyclerView의 마지막 줄에 삽입
                                 notifyItemChanged(getAdapterPosition());
                                 dialog.dismiss();
@@ -134,7 +144,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     // onBindViewHolder() - position에 해당하는 데이터를 뷰홀더의 아이템뷰에 표시.
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.index.setText(mData.get(position).getIndex());
         holder.name.setText(mData.get(position).getName());
         holder.group = mData.get(position).getGroup();
         holder.number = mData.get(position).getNumber();
