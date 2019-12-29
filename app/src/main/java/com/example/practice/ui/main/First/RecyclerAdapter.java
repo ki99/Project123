@@ -4,9 +4,18 @@ import android.app.AlertDialog;
 import android.content.Context;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.content.Intent;
+import android.net.Uri;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -18,10 +27,11 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     Context context;
 
     // 아이템 뷰를 저장하는 뷰홀더 클래스.
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
         protected TextView index;
         protected TextView name;
-        protected TextView group;
+        protected ImageButton button;
+        protected String group;
         protected String number;
 
         ViewHolder(View itemView) {
@@ -29,21 +39,77 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             // 뷰 객체에 대한 참조. (hold strong reference)
             index = itemView.findViewById(R.id.text1);
             name = itemView.findViewById(R.id.text2);
-            group = itemView.findViewById(R.id.text3);
+            button = itemView.findViewById(R.id.callButton);
 
-            itemView.setOnClickListener(new View.OnClickListener(){
+            itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-
-                    builder.setTitle("연락처").setMessage(number);
-
+                    builder.setTitle("연락처").setMessage("("+group+") "+number);
                     AlertDialog alertDialog = builder.create();
-
                     alertDialog.show();
                 }
             });
+            itemView.setOnCreateContextMenuListener(this);
+
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent();
+                    intent.setAction(Intent.ACTION_DIAL);
+                    intent.setData(Uri.parse("tel:"+number));
+                    context.startActivity(intent);
+                }
+            });
         }
+
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+
+            MenuItem Edit = menu.add(Menu.NONE, 1001, 1, "편집");
+            MenuItem Delete = menu.add(Menu.NONE, 1002, 2, "삭제");
+            Edit.setOnMenuItemClickListener(onEditMenu);
+            Delete.setOnMenuItemClickListener(onEditMenu);
+        }
+
+        private final MenuItem.OnMenuItemClickListener onEditMenu = new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case 1001:  // 5. 편집 항목을 선택시
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+                        View v = LayoutInflater.from(context)
+                                .inflate(R.layout.edittext, null, false);
+                        builder.setView(v);
+                        final EditText editname = v.findViewById(R.id.editname); //view에는 button 존재x
+                        final EditText editgroup = v.findViewById(R.id.editgroup);
+                        final EditText editnumber = v.findViewById(R.id.editnumber);
+                        final Button buttonsubmit = v.findViewById(R.id.button);
+
+                        final AlertDialog dialog = builder.create();
+                        buttonsubmit.setOnClickListener(new View.OnClickListener() {
+                            public void onClick(View view) {
+                                String strName = editname.getText().toString();
+                                String strGroup = editgroup.getText().toString();
+                                String strNumber = editnumber.getText().toString();
+                                Dictionary dict = new Dictionary(index.getText().toString(), strName, strGroup, strNumber);
+                                mData.set(getAdapterPosition(), dict); // RecyclerView의 마지막 줄에 삽입
+                                notifyItemChanged(getAdapterPosition());
+                                dialog.dismiss();
+                            }
+                        });
+                        dialog.show();
+                        break;
+                    case 1002:
+                        mData.remove(getAdapterPosition());
+                        notifyItemRemoved(getAdapterPosition());
+                        notifyItemRangeChanged(getAdapterPosition(),mData.size());
+                        break;
+                }
+                return true;
+            }
+        };
     }
 
     // 생성자에서 데이터 리스트 객체를 전달받음.
@@ -70,15 +136,15 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     public void onBindViewHolder(ViewHolder holder, int position) {
         holder.index.setText(mData.get(position).getIndex());
         holder.name.setText(mData.get(position).getName());
-        holder.group.setText(mData.get(position).getGroup());
+        holder.group = mData.get(position).getGroup();
         holder.number = mData.get(position).getNumber();
     }
 
     // getItemCount() - 전체 데이터 갯수 리턴.
     @Override
     public int getItemCount() {
-        if (mData !=null)
-        return mData.size();
+        if (mData != null)
+            return mData.size();
         else return 0;
     }
 }

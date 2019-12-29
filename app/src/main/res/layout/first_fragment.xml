@@ -1,27 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.main.SecondFragment"
     android:scrollbarFadeDuration="3"
-    android:scrollbarSize="5dp">
+    android:scrollbarSize="5sp"
+    tools:context=".ui.main.SecondFragment">
 
-<androidx.recyclerview.widget.RecyclerView
-    android:id="@+id/recycler"
-    android:scrollbars="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:layoutManager="LinearLayoutManager"/>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbarDefaultDelayBeforeFade="50"
+        android:scrollbarFadeDuration="200"
+        android:scrollbarThumbVertical="@android:color/darker_gray"
+        android:scrollbars="vertical"
+        app:layoutManager="LinearLayoutManager" />
 
-<com.google.android.material.floatingactionbutton.FloatingActionButton
-    android:id="@+id/fab"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="bottom|end"
-    android:layout_margin="@dimen/fab_margin"
-    android:tint="@android:color/white"
-    app:srcCompat="@android:drawable/ic_input_add"/>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/sync"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="160dp"
+        android:layout_marginRight="15sp"
+        android:visibility="invisible"
+        android:tint="@android:color/white"
+        android:backgroundTint="#f5007a"
+        android:src="@mipmap/ic_sync_round" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="90dp"
+        android:layout_marginRight="15sp"
+        android:visibility="invisible"
+        android:tint="@android:color/white"
+        android:backgroundTint="#f5007a"
+        app:srcCompat="@android:drawable/ic_input_add" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="15sp"
+        android:tint="@android:color/white"
+        android:backgroundTint="#f5007a"
+        app:srcCompat="@android:drawable/ic_input_add" />
 
 </FrameLayout>
