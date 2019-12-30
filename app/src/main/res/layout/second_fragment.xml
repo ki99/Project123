@@ -5,10 +5,15 @@
     android:layout_height="match_parent"
     tools:context=".ui.main.First.FirstFragment">
 
-    <TextView
+    <GridView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textSize="50sp"
-        android:text="Bye" />
+        android:layout_height="wrap_content"
+        android:id="@+id/gridView"
+        android:gravity="center"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="10dp"
+        android:horizontalSpacing="10dp"
+
+        android:numColumns="3"/>
 
 </FrameLayout>
