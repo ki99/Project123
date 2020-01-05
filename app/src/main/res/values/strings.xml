@@ -1,9 +1,3 @@
 <resources>
-    <string name="app_name">SendME</string>
-    <string name="tab_text_1">Contact address</string>
-    <string name="tab_text_2">Gallery</string>
-    <string name="tab_text_3">Send</string>
-
-    <string name="name">Name</string>
-    <string name="noimgae">Please select the photo</string>
+    <string name="app_name">MyApp</string>
 </resources>
