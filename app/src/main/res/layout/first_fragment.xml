@@ -5,8 +5,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:scrollbarFadeDuration="3"
-    android:scrollbarSize="5sp"
-    tools:context=".ui.main.SecondFragment">
+    android:scrollbarSize="3sp"
+    tools:context=".ui.main.Second.SecondFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:queryHint="Enter a name"
+        android:background="@drawable/searviewback"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+    </androidx.appcompat.widget.SearchView>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"
@@ -17,6 +36,7 @@
         android:scrollbarThumbVertical="@android:color/darker_gray"
         android:scrollbars="vertical"
         app:layoutManager="LinearLayoutManager" />
+    </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/sync"
@@ -27,8 +47,9 @@
         android:layout_marginRight="15sp"
         android:visibility="invisible"
         android:tint="@android:color/white"
-        android:backgroundTint="#f5007a"
-        android:src="@mipmap/ic_sync_round" />
+        android:backgroundTint="@color/dark"
+        app:borderWidth="0dp"
+        android:src="@mipmap/ic_sync" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add"
@@ -39,7 +60,8 @@
         android:layout_marginRight="15sp"
         android:visibility="invisible"
         android:tint="@android:color/white"
-        android:backgroundTint="#f5007a"
+        android:backgroundTint="@color/dark"
+        app:borderWidth="0dp"
         app:srcCompat="@android:drawable/ic_input_add" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -49,7 +71,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="15sp"
         android:tint="@android:color/white"
-        android:backgroundTint="#f5007a"
+        android:backgroundTint="@color/blue"
+        app:borderWidth="0dp"
         app:srcCompat="@android:drawable/ic_input_add" />
 
 </FrameLayout>
