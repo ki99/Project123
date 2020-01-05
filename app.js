@@ -20,6 +20,7 @@ mongoose.connect(mongoDB, {useNewUrlParser : true});
 
 // DEFINE MODEL
 var Contact = require('./models/cont');
+var Location = require('./models/loc');
 
 // [CONFIGURE APP TO USE bodyParser]
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -33,7 +34,8 @@ app.get('/', function(req, res) {
 //var port = process.env.PORT || 8080;
 
 // [CONFIGURE ROUTER]
-var router = require('./routes')(app, Contact);
+var router1 = require('./routes/index')(app, Contact);
+var router2 = require('./routes/location')(app, Location);
 
 // [RUN SERVER]
 var server = app.listen(80, function(){

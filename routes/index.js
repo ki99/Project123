@@ -26,13 +26,6 @@ module.exports = function(app, Contact)
             res.json(contacts);
         })
     });
-    app.get('/api/contacts/number/:number', function(req, res){
-        Contact.find({number: req.params.number}, {_id: 0, name : 1},  function(err, contacts){
-            if(err) return res.status(500).json({error: err});
-            if(contacts.length === 0) return res.status(404).json({error: 'contact not found'});
-            res.json(contacts);
-        })
-    });
 
     // CREATE CONTACT
     app.post('/api/contacts', function(req, res){
