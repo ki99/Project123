@@ -10,6 +10,7 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -42,6 +43,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.maps.android.SphericalUtil;
 
@@ -75,7 +77,7 @@ public class MainActivity extends AppCompatActivity
     // onRequestPermissionsResult에서 수신된 결과에서 ActivityCompat.requestPermissions를 사용한 퍼미션 요청을 구별하기 위해 사용됩니다.
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     boolean needRequest = false;
-
+    Marker myMarker = null;
 
     // 앱을 실행하기 위해 필요한 퍼미션을 정의합니다.
     String[] REQUIRED_PERMISSIONS = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};  // 외부 저장소
@@ -87,12 +89,14 @@ public class MainActivity extends AppCompatActivity
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest locationRequest;
     private Location location;
-
+    static boolean init = false;
     double maps[][];
     ArrayList<LocationInfo> pull_List = new ArrayList<>();
     ArrayList<LatLng> node_List = new ArrayList<>();
     double between_distance[];
     private LatLng dest;
+    private LatLng start;
+    private LatLng currentLatLng = null;
     private View mLayout;  // Snackbar 사용하기 위해서는 View가 필요합니다.
     // (참고로 Toast에서는 Context가 필요했습니다.)
 
@@ -107,7 +111,7 @@ public class MainActivity extends AppCompatActivity
 
 
 
-    public int get_Node_index_nearby_start_or_dest(LocationInfo node) {
+    public int get_Node_index_nearby_start_or_dest(LatLng node) {
         int len = pull_List.size();
         int minidx = 0;
         for (int i = 1; i < 5; i++) {
@@ -120,10 +124,10 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public double getDistance(int i, LocationInfo start) {
+    public double getDistance(int i, LatLng node) {
         double lati = pull_List.get(i).getLatitude();
         double longi = pull_List.get(i).getLongitude();
-        double myDistance = computeDistanceBetween(new LatLng(lati, longi), new LatLng(start.getLatitude(), start.getLongitude()));
+        double myDistance = computeDistanceBetween(new LatLng(lati, longi), node);
         return myDistance;
     }
 
@@ -244,7 +248,8 @@ public class MainActivity extends AppCompatActivity
             }
         });
         queue.add(jsonArrayRequest);
-
+        Toast myToast = Toast.makeText(this.getApplicationContext(), "목적지를 설정하세요", Toast.LENGTH_SHORT);
+        myToast.show();
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -313,30 +318,17 @@ public class MainActivity extends AppCompatActivity
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener(){
             @Override
-            public void onMapClick(LatLng point) {
-                MarkerOptions mOptions = new MarkerOptions();
-                // 마커 타이틀
-                mOptions.title("목적지");
-                Double latitude = point.latitude; // 위도
-                Double longitude = point.longitude; // 경도
-                // 마커의 스니펫(간단한 텍스트) 설정
-                mOptions.snippet(latitude.toString() + ", " + longitude.toString());
-                // LatLng: 위도 경도 쌍을 나타냄
-                mOptions.position(new LatLng(latitude, longitude));
-                dest = new LatLng(latitude, longitude);
-                // 마커(핀) 추가
-                googleMap.addMarker(mOptions);
+            public void onMapClick(final LatLng point) {
+                Dialog(point, googleMap);
             }
         });
-
-
-
+        set_maps();
         // for loop를 통한 n개의 마커 생성
-        for (int idx = 0; idx < 10; idx++) {
+        for (int idx = 0; idx < 5; idx++) {
             // 1. 마커 옵션 설정 (만드는 과정)
             MarkerOptions makerOptions = new MarkerOptions();
             makerOptions // LatLng에 대한 어레이를 만들어서 이용할 수도 있다.
-                    .position(new LatLng(37.52487 + idx, 126.92723))
+                    .position(node_List.get(idx))
                     .title("마커" + idx); // 타이틀.
 
             // 2. 마커 생성 (마커를 나타냄)
@@ -361,11 +353,76 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "onLocationResult : " + markerSnippet);
                 //현재 위치에 마커 생성하고 이동
                 setCurrentLocation(location, markerTitle, markerSnippet);
+                init = true;
                 mCurrentLocatiion = location;
             }
 
         }
     };
+    public void Dialog(final LatLng point, final GoogleMap googleMap) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("목적지로 설정하시겠습니까?");
+        builder.setMessage("진짜루?");
+        builder.setPositiveButton("예",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        googleMap.clear();
+
+                        for (int idx = 0; idx < 5; idx++) {
+                            // 1. 마커 옵션 설정 (만드는 과정)
+                            MarkerOptions makerOptions = new MarkerOptions();
+                            makerOptions // LatLng에 대한 어레이를 만들어서 이용할 수도 있다.
+                                    .position(node_List.get(idx))
+                                    .title("마커" + idx); // 타이틀.
+
+                            // 2. 마커 생성 (마커를 나타냄)
+                            mMap.addMarker(makerOptions);
+                        }
+
+
+                        if (myMarker != null) {myMarker.remove();}
+
+                        MarkerOptions mOptions = new MarkerOptions();
+                        // 마커 타이틀
+                        mOptions.title("목적지");
+                        Double latitude = point.latitude; // 위도
+                        Double longitude = point.longitude; // 경도
+                        // 마커의 스니펫(간단한 텍스트) 설정
+                        mOptions.snippet(latitude.toString() + ", " + longitude.toString());
+                        // LatLng: 위도 경도 쌍을 나타냄
+                        mOptions.position(new LatLng(latitude, longitude));
+                        dest = new LatLng(latitude, longitude);
+                        start = currentLatLng;
+                        // 마커(핀) 추가
+                        myMarker = googleMap.addMarker(mOptions);
+
+
+
+
+                        int nnsidx = get_Node_index_nearby_start_or_dest(start);
+                        LatLng nns = node_List.get(nnsidx);
+                        int nndidx = get_Node_index_nearby_start_or_dest(dest);
+                        LatLng nnd = node_List.get(nndidx);
+
+                        googleMap.addPolyline(new PolylineOptions().add(start, nns).width(25).color(Color.RED));
+                        googleMap.addPolyline(new PolylineOptions().add(nnd, nns).width(25).color(Color.BLUE));
+                        googleMap.addPolyline(new PolylineOptions().add(dest, nnd).width(25).color(Color.BLACK));
+
+
+                        출처: https://taetanee.tistory.com/entry/안드로이드-구글맵-선-그리기 [좋은 정보]
+
+                        Toast.makeText(getApplicationContext(), "목적지가 설정되었습니다.", Toast.LENGTH_LONG).show();
+                    }
+                });
+        builder.setNegativeButton("아니오",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(getApplicationContext(), "목적지를 설정하세요.", Toast.LENGTH_LONG).show();
+                    }
+                });
+        builder.show();
+    }
+
     private void startLocationUpdates() {
 
         if (!checkLocationServicesStatus()) {
@@ -454,8 +511,8 @@ public class MainActivity extends AppCompatActivity
     public void setCurrentLocation(Location location, String markerTitle, String markerSnippet) {
         if (currentMarker != null) currentMarker.remove();
 
-        LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-
+        currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        Log.d("####", String.valueOf(location.getLatitude()));
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(currentLatLng);
         markerOptions.title(markerTitle);
@@ -463,9 +520,10 @@ public class MainActivity extends AppCompatActivity
         markerOptions.draggable(true);
 
         currentMarker = mMap.addMarker(markerOptions);
-
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(currentLatLng);
-        mMap.moveCamera(cameraUpdate);
+        if (!init) {
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(currentLatLng);
+            mMap.moveCamera(cameraUpdate);
+        }
     }
 
     public void setDefaultLocation() {
