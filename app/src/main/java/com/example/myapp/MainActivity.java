@@ -98,6 +98,16 @@ public class MainActivity extends AppCompatActivity
     private LatLng start;
     private LatLng currentLatLng = null;
     private View mLayout;  // Snackbar 사용하기 위해서는 View가 필요합니다.
+
+    int distance_between_start_and_nns = 0;
+    int minute_to_nns = 0;
+    int distance_between_nns_and_nnd = 0;
+    int minute_from_nns_to_nnd = 0;
+    int fee = 0;
+    int distance_between_nnd_and_dest = 0;
+    int minute_to_dest = 0;
+
+
     // (참고로 Toast에서는 Context가 필요했습니다.)
 
     //LatLng node1 = new LatLng(37.52487, 126.92723);
@@ -114,10 +124,12 @@ public class MainActivity extends AppCompatActivity
     public int get_Node_index_nearby_start_or_dest(LatLng node) {
         int len = pull_List.size();
         int minidx = 0;
-        for (int i = 1; i < 5; i++) {
-            double myDistance = getDistance(i, node);
-            if (myDistance < getDistance(minidx, node)) {
-                minidx = i;
+        for (int i = 0; i < 5; i++) {
+            if (!node_List.get(i).equals(node)) {
+                double myDistance = getDistance(i, node);
+                if (myDistance < getDistance(minidx, node)) {
+                    minidx = i;
+                }
             }
         }
         return minidx;
@@ -140,7 +152,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void set_maps() {
+    public void set_maps(int v, int k) {
         pullToNodeList();
         int len = node_List.size();
         maps = new double[len][len];
@@ -150,6 +162,8 @@ public class MainActivity extends AppCompatActivity
                 maps[j][i] = computeDistanceBetween(node_List.get(i), node_List.get(j));
             }
         }
+        maps[v][k] = Double.MAX_VALUE;
+        maps[k][v] = Double.MAX_VALUE;
     }
 
     public double dijkstra(int v, int k) {
@@ -157,11 +171,12 @@ public class MainActivity extends AppCompatActivity
         between_distance = new double[len];
         boolean[] check = new boolean[len];
 
-        set_maps();
+        set_maps(v, k);
 
         //between_distance initialization
         for (int i = 0; i < 5; i++) {
             between_distance[i] = Double.MAX_VALUE;
+            check[i] = false;
         }
 
         between_distance[v] = 0;
@@ -178,19 +193,14 @@ public class MainActivity extends AppCompatActivity
             double min = Double.MAX_VALUE;
             int min_index = -1;
 
-            for (int i = 0; i < check.length; i++) {
-                Log.d("check", String.valueOf(check[i]));
-            }
 
-            for (int i = 0; i < check.length; i++) {
-                Log.d("betweenDistance", String.valueOf(between_distance[i]));
-            }
-
-            for (int i = 1; i < 5; i++) {
-                if (!check[i] && between_distance[i] != Double.MAX_VALUE) {
-                    if (between_distance[i] < min) {
-                        min = between_distance[i];
-                        min_index = i;
+            for (int i = 0; i < 5; i++) {
+                if (i != v) {
+                    if (!check[i] && between_distance[i] != Double.MAX_VALUE) {
+                        if (between_distance[i] < min) {
+                            min = between_distance[i];
+                            min_index = i;
+                        }
                     }
                 }
             }
@@ -322,7 +332,7 @@ public class MainActivity extends AppCompatActivity
                 Dialog(point, googleMap);
             }
         });
-        set_maps();
+        pullToNodeList();
         // for loop를 통한 n개의 마커 생성
         for (int idx = 0; idx < 5; idx++) {
             // 1. 마커 옵션 설정 (만드는 과정)
@@ -404,9 +414,37 @@ public class MainActivity extends AppCompatActivity
                         int nndidx = get_Node_index_nearby_start_or_dest(dest);
                         LatLng nnd = node_List.get(nndidx);
 
-                        googleMap.addPolyline(new PolylineOptions().add(start, nns).width(25).color(Color.RED));
-                        googleMap.addPolyline(new PolylineOptions().add(nnd, nns).width(25).color(Color.BLUE));
-                        googleMap.addPolyline(new PolylineOptions().add(dest, nnd).width(25).color(Color.BLACK));
+
+                        distance_between_start_and_nns = (int) computeDistanceBetween(start, nns);
+                        minute_to_nns = distance_between_start_and_nns/80;
+
+                        double distance_between_nns_and_nnd_dijkstra = dijkstra(nnsidx, nndidx);
+
+                        Log.d("dijkstra", String.valueOf(distance_between_nns_and_nnd_dijkstra));
+
+                        double for_correction_between_nns_and_nnd =  (computeDistanceBetween(nns, nnd) * 1.5);
+
+                        Log.d("correction", String.valueOf(for_correction_between_nns_and_nnd));
+
+                        distance_between_nns_and_nnd = (int)(distance_between_nns_and_nnd_dijkstra+for_correction_between_nns_and_nnd)/2;
+                        if (get_Node_index_nearby_start_or_dest(nns) == nndidx) {distance_between_nns_and_nnd = (int) (computeDistanceBetween(nns, nnd)*1.2);}
+
+                        Log.d("result", String.valueOf(distance_between_nns_and_nnd));
+
+                        minute_from_nns_to_nnd = distance_between_nns_and_nnd/300;
+                        fee = calculate_fee(minute_from_nns_to_nnd);
+
+
+                        distance_between_nnd_and_dest = (int)computeDistanceBetween(nnd, dest);
+                        minute_to_dest = distance_between_nnd_and_dest/80;
+
+                        Log.d("result", String.valueOf(distance_between_nnd_and_dest));
+
+
+
+                        googleMap.addPolyline(new PolylineOptions().add(start, nns).width(15).color(Color.BLACK));
+                        googleMap.addPolyline(new PolylineOptions().add(nnd, nns).width(15).color(Color.BLUE));
+                        googleMap.addPolyline(new PolylineOptions().add(dest, nnd).width(15).color(Color.BLACK));
 
 
                         출처: https://taetanee.tistory.com/entry/안드로이드-구글맵-선-그리기 [좋은 정보]
@@ -446,7 +484,16 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
+    public int calculate_fee(int mfstd) {
+        int myint = mfstd / 30;
+        if (myint < 2) {
+            return 500;
+        } else if (myint < 6) {
+            return (500 + (myint - 1) * 500);
+        } else {
+            return (2500 + (myint - 5) * 1000);
+        }
+    }
     @Override
     protected void onStart() {
         super.onStart();
