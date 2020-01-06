@@ -21,6 +21,12 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -37,10 +43,19 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.maps.android.SphericalUtil;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import static com.google.maps.android.SphericalUtil.computeDistanceBetween;
+import static java.sql.Types.DOUBLE;
 
 
 public class MainActivity extends AppCompatActivity
@@ -69,18 +84,167 @@ public class MainActivity extends AppCompatActivity
     Location mCurrentLocatiion;
     LatLng currentPosition;
 
-
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest locationRequest;
     private Location location;
 
-
+    double maps[][];
+    ArrayList<LocationInfo> pull_List = new ArrayList<>();
+    ArrayList<LatLng> node_List = new ArrayList<>();
+    double between_distance[];
+    private LatLng dest;
     private View mLayout;  // Snackbar 사용하기 위해서는 View가 필요합니다.
     // (참고로 Toast에서는 Context가 필요했습니다.)
+
+    //LatLng node1 = new LatLng(37.52487, 126.92723);
+    //LatLng node2 = new LatLng(100.02, 9.2);
+    //distance = Math.round(computeDistanceBetween(node1, node2)*10)/10; // Km
+
+    //모든 class object들을 LatLan으로 변환하여 다 넣은 리스트 -> node_list[]
+    //start_node = index가 0
+
+    // 넣으면 return 값으로 node_nearby_start와 node_nearby_dest사이의 거리를 반환함
+
+
+
+    public int get_Node_index_nearby_start_or_dest(LocationInfo node) {
+        int len = pull_List.size();
+        int minidx = 0;
+        for (int i = 1; i < 5; i++) {
+            double myDistance = getDistance(i, node);
+            if (myDistance < getDistance(minidx, node)) {
+                minidx = i;
+            }
+        }
+        return minidx;
+    }
+
+
+    public double getDistance(int i, LocationInfo start) {
+        double lati = pull_List.get(i).getLatitude();
+        double longi = pull_List.get(i).getLongitude();
+        double myDistance = computeDistanceBetween(new LatLng(lati, longi), new LatLng(start.getLatitude(), start.getLongitude()));
+        return myDistance;
+    }
+
+    public void pullToNodeList() {
+        int len = pull_List.size();
+        for (int i = 0; i < 5; i++) {
+            double lati = pull_List.get(i).getLatitude();
+            double longi = pull_List.get(i).getLongitude();
+            node_List.add(new LatLng(lati, longi));
+        }
+    }
+
+    public void set_maps() {
+        pullToNodeList();
+        int len = node_List.size();
+        maps = new double[len][len];
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j <= i; j++) {
+                maps[i][j] = computeDistanceBetween(node_List.get(i), node_List.get(j));
+                maps[j][i] = computeDistanceBetween(node_List.get(i), node_List.get(j));
+            }
+        }
+    }
+
+    public double dijkstra(int v, int k) {
+        int len = node_List.size();
+        between_distance = new double[len];
+        boolean[] check = new boolean[len];
+
+        set_maps();
+
+        //between_distance initialization
+        for (int i = 0; i < 5; i++) {
+            between_distance[i] = Double.MAX_VALUE;
+        }
+
+        between_distance[v] = 0;
+        check[v] = true;
+
+        for(int i = 0; i < 5; i++) {
+            if(!check[i]) {
+                between_distance[i] = maps[v][i];
+            }
+        }
+
+        for (int a = 0; a < 5; a++) {
+
+            double min = Double.MAX_VALUE;
+            int min_index = -1;
+
+            for (int i = 0; i < check.length; i++) {
+                Log.d("check", String.valueOf(check[i]));
+            }
+
+            for (int i = 0; i < check.length; i++) {
+                Log.d("betweenDistance", String.valueOf(between_distance[i]));
+            }
+
+            for (int i = 1; i < 5; i++) {
+                if (!check[i] && between_distance[i] != Double.MAX_VALUE) {
+                    if (between_distance[i] < min) {
+                        min = between_distance[i];
+                        min_index = i;
+                    }
+                }
+            }
+
+            if (min_index != -1) {
+                check[min_index] = true;
+                for (int i = 0; i < 5; i++) {
+                    if (!check[i] && maps[min_index][i] != 0) {
+                        if (between_distance[i] > between_distance[min_index] + maps[min_index][i]) {
+                            between_distance[i] = between_distance[min_index] + maps[min_index][i];
+                        }
+                    }
+                }
+            }
+        }
+
+
+        double mydistance = between_distance[k];
+        return mydistance;
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = "http://192.249.19.251:780/api/locations";
+        Log.d("dbProcess", url+"");
+
+        final JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                try {Log.d("onrespone", response+"");
+                    for (int i = 0; i < 5; i++) {
+                        JSONObject jsonObject = response.getJSONObject(i);
+                        int index = Integer.parseInt(jsonObject.getString("index"));
+                        String name = jsonObject.getString("name");
+                        String address = jsonObject.getString("address");
+                        double latitude = Double.parseDouble(jsonObject.getString("latitude"));
+                        double longtitude = Double.parseDouble(jsonObject.getString("longtitude"));
+                        LocationInfo loc = new LocationInfo(index, name, address, latitude, longtitude);
+                        Log.d("dbprocess", loc+"");
+                        pull_List.add(loc);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Log.d("responseError1", "error1");
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("responseError2", "error2");
+            }
+        });
+        queue.add(jsonArrayRequest);
+
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -98,8 +262,12 @@ public class MainActivity extends AppCompatActivity
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+
         mapFragment.getMapAsync(this);
+
+
     }
+
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
@@ -108,6 +276,7 @@ public class MainActivity extends AppCompatActivity
         //런타임 퍼미션 요청 대화상자나 GPS 활성 요청 대화상자 보이기전에
         //지도의 초기위치를 서울로 이동
         setDefaultLocation();
+
 
         //런타임 퍼미션 처리
         // 1. 위치 퍼미션을 가지고 있는지 체크합니다.
@@ -142,13 +311,25 @@ public class MainActivity extends AppCompatActivity
         }
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener(){
             @Override
-            public void onMapClick(LatLng latLng) {
-                Log.d(TAG, "onMapClick :");
+            public void onMapClick(LatLng point) {
+                MarkerOptions mOptions = new MarkerOptions();
+                // 마커 타이틀
+                mOptions.title("목적지");
+                Double latitude = point.latitude; // 위도
+                Double longitude = point.longitude; // 경도
+                // 마커의 스니펫(간단한 텍스트) 설정
+                mOptions.snippet(latitude.toString() + ", " + longitude.toString());
+                // LatLng: 위도 경도 쌍을 나타냄
+                mOptions.position(new LatLng(latitude, longitude));
+                dest = new LatLng(latitude, longitude);
+                // 마커(핀) 추가
+                googleMap.addMarker(mOptions);
             }
         });
+
+
 
         // for loop를 통한 n개의 마커 생성
         for (int idx = 0; idx < 10; idx++) {
@@ -182,11 +363,11 @@ public class MainActivity extends AppCompatActivity
                 setCurrentLocation(location, markerTitle, markerSnippet);
                 mCurrentLocatiion = location;
             }
+
         }
     };
-
-
     private void startLocationUpdates() {
+
         if (!checkLocationServicesStatus()) {
             Log.d(TAG, "startLocationUpdates : call showDialogForLocationServiceSetting");
             showDialogForLocationServiceSetting();
@@ -215,6 +396,8 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "onStart");
         if (checkPermission()) {
             Log.d(TAG, "onStart : call mFusedLocationClient.requestLocationUpdates");
+
+
             mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
 
             if (mMap != null)
