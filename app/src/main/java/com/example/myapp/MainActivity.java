@@ -10,7 +10,9 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -106,6 +108,8 @@ public class MainActivity extends AppCompatActivity
     int fee = 0;
     int distance_between_nnd_and_dest = 0;
     int minute_to_dest = 0;
+    double calorie;
+    int total_minute;
 
 
     // (참고로 Toast에서는 Context가 필요했습니다.)
@@ -333,13 +337,19 @@ public class MainActivity extends AppCompatActivity
             }
         });
         pullToNodeList();
+
+        BitmapDrawable bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.bike);
+        Bitmap b=bitmapdraw.getBitmap();
+        Bitmap smallMarker = Bitmap.createScaledBitmap(b, 80, 80, false);
         // for loop를 통한 n개의 마커 생성
         for (int idx = 0; idx < 5; idx++) {
             // 1. 마커 옵션 설정 (만드는 과정)
             MarkerOptions makerOptions = new MarkerOptions();
             makerOptions // LatLng에 대한 어레이를 만들어서 이용할 수도 있다.
                     .position(node_List.get(idx))
-                    .title("마커" + idx); // 타이틀.
+                    .title("마커" + idx)
+                    .icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
+
 
             // 2. 마커 생성 (마커를 나타냄)
             mMap.addMarker(makerOptions);
@@ -378,12 +388,16 @@ public class MainActivity extends AppCompatActivity
                     public void onClick(DialogInterface dialog, int which) {
                         googleMap.clear();
 
+                        BitmapDrawable bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.bike);
+                        Bitmap b=bitmapdraw.getBitmap();
+                        Bitmap smallMarker = Bitmap.createScaledBitmap(b, 80, 80, false);
                         for (int idx = 0; idx < 5; idx++) {
                             // 1. 마커 옵션 설정 (만드는 과정)
                             MarkerOptions makerOptions = new MarkerOptions();
                             makerOptions // LatLng에 대한 어레이를 만들어서 이용할 수도 있다.
                                     .position(node_List.get(idx))
-                                    .title("마커" + idx); // 타이틀.
+                                    .title("마커" + idx)
+                                    .icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
 
                             // 2. 마커 생성 (마커를 나타냄)
                             mMap.addMarker(makerOptions);
@@ -435,15 +449,20 @@ public class MainActivity extends AppCompatActivity
                         fee = calculate_fee(minute_from_nns_to_nnd);
 
 
+
                         distance_between_nnd_and_dest = (int)computeDistanceBetween(nnd, dest);
                         minute_to_dest = distance_between_nnd_and_dest/80;
 
                         Log.d("result", String.valueOf(distance_between_nnd_and_dest));
 
+                        double walkingCalorie = (minute_to_nns + minute_to_dest)*2.52;
+                        double ridingCalorie =  minute_from_nns_to_nnd * 10.2;
+                        calorie = walkingCalorie + ridingCalorie;
 
+                        total_minute = minute_from_nns_to_nnd+minute_to_dest+minute_to_nns;
 
                         googleMap.addPolyline(new PolylineOptions().add(start, nns).width(15).color(Color.BLACK));
-                        googleMap.addPolyline(new PolylineOptions().add(nnd, nns).width(15).color(Color.BLUE));
+                        googleMap.addPolyline(new PolylineOptions().add(nnd, nns).width(15).color(Color.RED));
                         googleMap.addPolyline(new PolylineOptions().add(dest, nnd).width(15).color(Color.BLACK));
 
 
@@ -708,28 +727,5 @@ public class MainActivity extends AppCompatActivity
 
 }
 
-
-
-/*        LinearLayout linearLayoutTmap = (LinearLayout)findViewById(R.id.linearLayoutTmap);
-        TMapView tMapView = new TMapView(this);
-
-        tMapView.setSKTMapApiKey("l7xx4b6b1d4d0842475881de1bdf04d6dac9");
-        linearLayoutTmap.addView( tMapView );*/
-// tMapView.setCenterPoint(127.365643, 36.374104);
-
-/*
-        TMapMarkerItem markerItem1 = new TMapMarkerItem();
-        TMapPoint tMapPoint1 = new TMapPoint(37.570841, 126.985302); // SKT타워
-// 마커 아이콘
-
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.marker);
-
-       // markerItem1.setIcon(bitmap); // 마커 아이콘 지정
-        markerItem1.setPosition(0.5f, 1.0f); // 마커의 중심점을 중앙, 하단으로 설정
-        markerItem1.setTMapPoint( tMapPoint1 ); // 마커의 좌표 지정
-        markerItem1.setName("SKT타워"); // 마커의 타이틀 지정
-        tMapView.addMarkerItem("markerItem1", markerItem1); // 지도에 마커 추가
-
-        tMapView.setCenterPoint( 126.985302, 37.570841 );*/
 
 
