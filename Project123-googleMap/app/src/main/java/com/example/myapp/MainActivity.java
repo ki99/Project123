@@ -406,6 +406,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setProfile() {
+        try {
         Profile prof = getCurrentProfile();
         Uri image = prof.getProfilePictureUri(200, 200);
         Log.d("profileimage", image+"");
@@ -413,7 +414,8 @@ public class MainActivity extends AppCompatActivity
         Log.d("profile", textName+"");
         Log.d("profile", name);
         profileView.setProfileId(Profile.getCurrentProfile().getId());
-        textName.setText(name);
+        textName.setText(name); }
+        catch (NullPointerException e) {}
     }
 
     @Override
