@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity
 
     private GoogleMap mMap;
     private Marker currentMarker = null;
-
+    private int LEN = 5;
     private static final String TAG = "googlemap_example";
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
     private static final int UPDATE_INTERVAL_MS = 1000;  // 1초
@@ -134,10 +134,7 @@ public class MainActivity extends AppCompatActivity
     MenuItem third_dist;
     MenuItem logout;
 
-    // (참고로 Toast에서는 Context가 필요했습니다.)
 
-    //LatLng node1 = new LatLng(37.52487, 126.92723);
-    //LatLng node2 = new LatLng(100.02, 9.2);
     //distance = Math.round(computeDistanceBetween(node1, node2)*10)/10; // Km
 
     //모든 class object들을 LatLan으로 변환하여 다 넣은 리스트 -> node_list[]
@@ -147,15 +144,13 @@ public class MainActivity extends AppCompatActivity
 
 
     public int get_Node_index_nearby_start_or_dest(LatLng node) {
-        int len = pull_List.size();
+        int LEN = pull_List.size();
         int minidx = 0;
-        for (int i = 0; i < 10; i++) {
-            if (!node_List.get(i).equals(node)) {
+        for (int i = 0; i < LEN; i++) {
                 double myDistance = getDistance(i, node);
                 if (myDistance < getDistance(minidx, node)) {
                     minidx = i;
                 }
-            }
         }
         return minidx;
     }
@@ -164,17 +159,19 @@ public class MainActivity extends AppCompatActivity
     public double getDistance(int i, LatLng node) {
         double lati = pull_List.get(i).getLatitude();
         double longi = pull_List.get(i).getLongitude();
-        double myDistance = computeDistanceBetween(new LatLng(lati, longi), node);
+        double myDistance = computeDistanceBetween(new LatLng(longi, lati), node);
         return myDistance;
     }
 
     public void pullToNodeList() {
-        int len = pull_List.size();
+        int LEN = pull_List.size();
         Log.d("pulltonode", "pullsize"+pull_List.size()+"");
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < LEN; i++) {
             double lati = pull_List.get(i).getLatitude();
             double longi = pull_List.get(i).getLongitude();
-            node_List.add(new LatLng(lati, longi));
+            Log.d("pulltonodelatlng", lati+","+longi);
+            node_List.add(new LatLng(longi, lati));
+            Log.d("pulltonodelatlngdone", "nodelistitem"+node_List.get(0)+"");
         }
     }
 
@@ -182,7 +179,7 @@ public class MainActivity extends AppCompatActivity
         pullToNodeList();
         int len = node_List.size();
         maps = new double[len][len];
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < LEN; i++) {
             for (int j = 0; j <= i; j++) {
                 maps[i][j] = computeDistanceBetween(node_List.get(i), node_List.get(j));
                 maps[j][i] = computeDistanceBetween(node_List.get(i), node_List.get(j));
@@ -193,14 +190,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     public double dijkstra(int v, int k) {
-        int len = node_List.size();
-        between_distance = new double[len];
-        boolean[] check = new boolean[len];
+        int LEN = node_List.size();
+        between_distance = new double[LEN];
+        boolean[] check = new boolean[LEN];
 
         set_maps(v, k);
 
         //between_distance initialization
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < LEN; i++) {
             between_distance[i] = Double.MAX_VALUE;
             check[i] = false;
         }
@@ -208,17 +205,17 @@ public class MainActivity extends AppCompatActivity
         between_distance[v] = 0;
         check[v] = true;
 
-        for(int i = 0; i < 10; i++) {
+        for(int i = 0; i < LEN; i++) {
             if(!check[i]) {
                 between_distance[i] = maps[v][i];
             }
         }
 
-        for (int a = 0; a < 10; a++) {
+        for (int a = 0; a < LEN; a++) {
             double min = Double.MAX_VALUE;
             int min_index = -1;
 
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < LEN; i++) {
                 if (i != v) {
                     if (!check[i] && between_distance[i] != Double.MAX_VALUE) {
                         if (between_distance[i] < min) {
@@ -231,7 +228,7 @@ public class MainActivity extends AppCompatActivity
 
             if (min_index != -1) {
                 check[min_index] = true;
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < LEN; i++) {
                     if (!check[i] && maps[min_index][i] != 0) {
                         if (between_distance[i] > between_distance[min_index] + maps[min_index][i]) {
                             between_distance[i] = between_distance[min_index] + maps[min_index][i];
@@ -250,6 +247,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         takefromDB();
+        Log.d("pull_list_size", pull_List.size() + "");
 
         Toast myToast = Toast.makeText(this.getApplicationContext(), "목적지를 설정하세요", Toast.LENGTH_SHORT);
         myToast.show();
@@ -315,7 +313,7 @@ public class MainActivity extends AppCompatActivity
             public void onResponse(JSONArray response) {
                 try {Log.d("onrespone", response+"");
                     Log.d("datalength", response.length()+"");
-                    for (int i = 0; i < 10; i++) {
+                    for (int i = 0; i < 229; i++) {
                         JSONObject jsonObject = response.getJSONObject(i);
                         int index = Integer.parseInt(jsonObject.getString("index"));
                         String name = jsonObject.getString("name");
@@ -409,7 +407,7 @@ public class MainActivity extends AppCompatActivity
                 Dialog(point, googleMap);
             }
         });
-        if ( pull_List.size() > 0 ) { //서버에서 데이터를 받아온 경우
+         //서버에서 데이터를 받아온 경우
             Log.d("pullistsize", pull_List.size()+"");
             pullToNodeList();
 
@@ -417,7 +415,8 @@ public class MainActivity extends AppCompatActivity
             Bitmap b = bitmapdraw.getBitmap();
             Bitmap smallMarker = Bitmap.createScaledBitmap(b, 80, 80, false);
             // for loop를 통한 n개의 마커 생성
-            for (int idx = 0; idx < pull_List.size(); idx++) { //pull__list 맞나????????????????
+            int LEN =pull_List.size();
+            for (int idx = 0; idx < LEN; idx++) { //pull__list 맞나????????????????
                 // 1. 마커 옵션 설정 (만드는 과정)
                 MarkerOptions makerOptions = new MarkerOptions();
                 makerOptions // LatLng에 대한 어레이를 만들어서 이용할 수도 있다.
@@ -429,9 +428,8 @@ public class MainActivity extends AppCompatActivity
                 mMap.addMarker(makerOptions);
                 Log.d("eachmarker", makerOptions+"");
             } Log.d("markeradd", "end"+node_List.size());
-        } else {
-            Toast.makeText(getApplicationContext(), "Server is not available.", Toast.LENGTH_SHORT).show();
-        }
+
+
 
     }
 
@@ -466,11 +464,14 @@ public class MainActivity extends AppCompatActivity
                     public void onClick(DialogInterface dialog, int which) {
                         googleMap.clear();
 
+                        Log.d("pullsize", pull_List.size()+"");
+                        Log.d("nodeLatLng", node_List.get(1)+"");
                         //?????????????????????
                         BitmapDrawable bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.bike);
                         Bitmap b=bitmapdraw.getBitmap();
                         Bitmap smallMarker = Bitmap.createScaledBitmap(b, 80, 80, false);
-                        for (int idx = 0; idx < 5; idx++) {
+                        LEN = pull_List.size();
+                        for (int idx = 0; idx < LEN; idx++) {
                             // 1. 마커 옵션 설정 (만드는 과정)
                             MarkerOptions makerOptions = new MarkerOptions();
                             makerOptions // LatLng에 대한 어레이를 만들어서 이용할 수도 있다.
@@ -482,6 +483,7 @@ public class MainActivity extends AppCompatActivity
                             mMap.addMarker(makerOptions);
                         }
 
+                        Log.d("###", pull_List.size() + "마커" + node_List.size());
 
                         if (myMarker != null) {myMarker.remove();}
 
@@ -489,6 +491,7 @@ public class MainActivity extends AppCompatActivity
                         // 마커 타이틀
                         mOptions.title("목적지");
                         Double latitude = point.latitude; // 위도
+
                         Double longitude = point.longitude; // 경도
                         // 마커의 스니펫(간단한 텍스트) 설정
                         mOptions.snippet(latitude.toString() + ", " + longitude.toString());
@@ -511,15 +514,16 @@ public class MainActivity extends AppCompatActivity
                         double distance_between_nns_and_nnd_dijkstra = dijkstra(nnsidx, nndidx);
                         Log.d("dijkstra", String.valueOf(distance_between_nns_and_nnd_dijkstra));
 
-                        double for_correction_between_nns_and_nnd = (computeDistanceBetween(nns, nnd) * 1.5);
+                        double for_correction_between_nns_and_nnd = (computeDistanceBetween(nns, nnd) * 1.58);
                         Log.d("correction", String.valueOf(for_correction_between_nns_and_nnd));
-                        distance_between_nns_and_nnd = (int) (distance_between_nns_and_nnd_dijkstra + for_correction_between_nns_and_nnd) / 2;
+                        double newCorrection = (1 + ((computeDistanceBetween(nns,nnd)/1000) * 0.075 )) * for_correction_between_nns_and_nnd;
+                        distance_between_nns_and_nnd = (int) (distance_between_nns_and_nnd_dijkstra + newCorrection)/2;
                         if (get_Node_index_nearby_start_or_dest(nns) == nndidx) {
                             distance_between_nns_and_nnd = (int) (computeDistanceBetween(nns, nnd) * 1.2);
                         }
                         Log.d("result", String.valueOf(distance_between_nns_and_nnd));
 
-                        minute_from_nns_to_nnd = distance_between_nns_and_nnd / 300;
+                        minute_from_nns_to_nnd = distance_between_nns_and_nnd / 280;
                         fee = calculate_fee(minute_from_nns_to_nnd);
                         distance_between_nnd_and_dest = (int) computeDistanceBetween(nnd, dest);
                         minute_to_dest = distance_between_nnd_and_dest / 80;
