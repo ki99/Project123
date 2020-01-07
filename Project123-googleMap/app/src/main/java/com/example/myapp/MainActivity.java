@@ -121,6 +121,8 @@ public class MainActivity extends AppCompatActivity
     int total_minute;
     int total_distance;
     int taxi_fee;
+    static boolean start_point_set = false;
+    static boolean end_point_set = false;
 
     MenuItem money ;
     MenuItem total_time ;
@@ -133,6 +135,7 @@ public class MainActivity extends AppCompatActivity
     MenuItem third_time ;
     MenuItem third_dist;
     MenuItem logout;
+    MenuItem clear;
 
 
     //distance = Math.round(computeDistanceBetween(node1, node2)*10)/10; // Km
@@ -291,6 +294,7 @@ public class MainActivity extends AppCompatActivity
         third_time = menu.findItem(R.id.third_time);
         third_dist = menu.findItem(R.id.third_dist);
         logout = menu.findItem(R.id.logout);
+        clear = menu.findItem(R.id.clear);
 
         logout.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
@@ -301,6 +305,47 @@ public class MainActivity extends AppCompatActivity
                 return false; //false??
             }
         });
+        clear.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                start_point_set = false;
+                end_point_set = false;
+                mMap.clear();
+                BitmapDrawable bitmapdraw = (BitmapDrawable) getResources().getDrawable(R.drawable.bike);
+                Bitmap b = bitmapdraw.getBitmap();
+                Bitmap smallMarker = Bitmap.createScaledBitmap(b, 80, 80, false);
+
+                int LEN =pull_List.size();
+                for (int idx = 0; idx < LEN; idx++) { //pull__list 맞나????????????????
+                    // 1. 마커 옵션 설정 (만드는 과정)
+                    MarkerOptions makerOptions = new MarkerOptions();
+                    makerOptions // LatLng에 대한 어레이를 만들어서 이용할 수도 있다.
+                            .position(node_List.get(idx))
+                            .title("마커" + idx)
+                            .icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
+
+                    // 2. 마커 생성 (마커를 나타냄)
+                    mMap.addMarker(makerOptions);
+                }
+                Toast.makeText(getApplicationContext(), "초기화가 완료되었습니다.", Toast.LENGTH_LONG).show();
+                return false;
+            }
+        });
+        BitmapDrawable bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.bike);
+        Bitmap b=bitmapdraw.getBitmap();
+        Bitmap smallMarker = Bitmap.createScaledBitmap(b, 80, 80, false);
+        LEN = pull_List.size();
+        for (int idx = 0; idx < LEN; idx++) {
+            // 1. 마커 옵션 설정 (만드는 과정)
+            MarkerOptions makerOptions = new MarkerOptions();
+            makerOptions // LatLng에 대한 어레이를 만들어서 이용할 수도 있다.
+                    .position(node_List.get(idx))
+                    .title("마커" + idx)
+                    .icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
+
+            // 2. 마커 생성 (마커를 나타냄)
+            mMap.addMarker(makerOptions);
+        }
     }
 
     private void takefromDB() {
@@ -320,14 +365,12 @@ public class MainActivity extends AppCompatActivity
                         String address = jsonObject.getString("address");
                         double latitude = Double.parseDouble(jsonObject.getString("latitude"));
                         double longtitude = Double.parseDouble(jsonObject.getString("longtitude"));
-                        Log.d("latlong",latitude+" "+longtitude);
                         LocationInfo loc = new LocationInfo(index, name, address, latitude, longtitude);
-                        Log.d("dbprocess", loc+"");
                         pull_List.add(loc);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    Log.d("responseError1", "error1");
+
                 }
             }
         }, new Response.ErrorListener() {
@@ -342,7 +385,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_info, menu);
-        Log.d("optionitemselected", menu.getItem(0)+"");
         return true;
     }
 
@@ -404,7 +446,12 @@ public class MainActivity extends AppCompatActivity
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener(){
             @Override
             public void onMapClick(final LatLng point) {
-                Dialog(point, googleMap);
+                if (!start_point_set) {
+                    Dialog1(point, googleMap);
+                }
+                else if (!end_point_set) {
+                    Dialog2(point, googleMap);
+                }
             }
         });
         //서버에서 데이터를 받아온 경우
@@ -455,17 +502,16 @@ public class MainActivity extends AppCompatActivity
 
         }
     };
-    public void Dialog(final LatLng point, final GoogleMap googleMap) {
+
+    public void Dialog1(final LatLng point, final GoogleMap googleMap) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("목적지로 설정하시겠습니까?");
+        builder.setTitle("출발지로 설정하시겠습니까?");
         builder.setMessage("진짜루?");
         builder.setPositiveButton("예",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         googleMap.clear();
 
-                        Log.d("pullsize", pull_List.size()+"");
-                        Log.d("nodeLatLng", node_List.get(1)+"");
                         //?????????????????????
                         BitmapDrawable bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.bike);
                         Bitmap b=bitmapdraw.getBitmap();
@@ -483,13 +529,11 @@ public class MainActivity extends AppCompatActivity
                             mMap.addMarker(makerOptions);
                         }
 
-                        Log.d("###", pull_List.size() + "마커" + node_List.size());
-
                         if (myMarker != null) {myMarker.remove();}
 
                         MarkerOptions mOptions = new MarkerOptions();
                         // 마커 타이틀
-                        mOptions.title("목적지");
+                        mOptions.title("출발지");
                         Double latitude = point.latitude; // 위도
 
                         Double longitude = point.longitude; // 경도
@@ -497,10 +541,83 @@ public class MainActivity extends AppCompatActivity
                         mOptions.snippet(latitude.toString() + ", " + longitude.toString());
                         // LatLng: 위도 경도 쌍을 나타냄
                         mOptions.position(new LatLng(latitude, longitude));
+                        start = new LatLng(latitude, longitude);
+
+                        myMarker = googleMap.addMarker(mOptions);
+                        start_point_set = true;
+                        Toast.makeText(getApplicationContext(), "출발지가 설정되었습니다.", Toast.LENGTH_LONG).show();
+                    }
+                });
+        builder.setNegativeButton("아니오",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(getApplicationContext(), "출발지를 설정하세요.", Toast.LENGTH_LONG).show();
+                    }
+                });
+        builder.show();
+    }
+
+
+
+
+
+    public void Dialog2(final LatLng point, final GoogleMap googleMap) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("목적지로 설정하시겠습니까?");
+        builder.setMessage("진짜루?");
+        builder.setPositiveButton("예",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        googleMap.clear();
+
+                        BitmapDrawable bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.bike);
+                        Bitmap b=bitmapdraw.getBitmap();
+                        Bitmap smallMarker = Bitmap.createScaledBitmap(b, 80, 80, false);
+                        LEN = pull_List.size();
+                        for (int idx = 0; idx < LEN; idx++) {
+                            // 1. 마커 옵션 설정 (만드는 과정)
+                            MarkerOptions makerOptions = new MarkerOptions();
+                            makerOptions // LatLng에 대한 어레이를 만들어서 이용할 수도 있다.
+                                    .position(node_List.get(idx))
+                                    .title("마커" + idx)
+                                    .icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
+
+                            // 2. 마커 생성 (마커를 나타냄)
+                            mMap.addMarker(makerOptions);
+                        }
+
+                        MarkerOptions mOptions1 = new MarkerOptions();
+                        // 마커 타이틀
+                        mOptions1.title("출발지");
+                        Double latitude = start.latitude; // 위도
+
+                        Double longitude = start.longitude; // 경도
+                        // 마커의 스니펫(간단한 텍스트) 설정
+                        mOptions1.snippet(latitude.toString() + ", " + longitude.toString());
+                        // LatLng: 위도 경도 쌍을 나타냄
+                        mOptions1.position(new LatLng(latitude, longitude));
+                        // 마커(핀) 추가
+                        myMarker = googleMap.addMarker(mOptions1);
+
+
+                        MarkerOptions mOptions = new MarkerOptions();
+                        // 마커 타이틀
+                        mOptions.title("목적지");
+                        latitude = point.latitude; // 위도
+
+                        longitude = point.longitude; // 경도
+                        // 마커의 스니펫(간단한 텍스트) 설정
+                        mOptions.snippet(latitude.toString() + ", " + longitude.toString());
+                        // LatLng: 위도 경도 쌍을 나타냄
+                        mOptions.position(new LatLng(latitude, longitude));
                         dest = new LatLng(latitude, longitude);
-                        start = currentLatLng;
                         // 마커(핀) 추가
                         myMarker = googleMap.addMarker(mOptions);
+
+
+
+
+
 
 
                         int nnsidx = get_Node_index_nearby_start_or_dest(start);
@@ -514,13 +631,13 @@ public class MainActivity extends AppCompatActivity
                         double distance_between_nns_and_nnd_dijkstra = dijkstra(nnsidx, nndidx);
                         Log.d("dijkstra", String.valueOf(distance_between_nns_and_nnd_dijkstra));
 
-                        double for_correction_between_nns_and_nnd = (computeDistanceBetween(nns, nnd) * 1.58);
+                        double for_correction_between_nns_and_nnd = (computeDistanceBetween(nns, nnd) * 1.75);
                         Log.d("correction", String.valueOf(for_correction_between_nns_and_nnd));
-                        double newCorrection = (1 + ((computeDistanceBetween(nns,nnd)/1000) * 0.075 )) * for_correction_between_nns_and_nnd;
-                        distance_between_nns_and_nnd = (int) (distance_between_nns_and_nnd_dijkstra + newCorrection)/2;
-                        if (get_Node_index_nearby_start_or_dest(nns) == nndidx) {
-                            distance_between_nns_and_nnd = (int) (computeDistanceBetween(nns, nnd) * 1.2);
-                        }
+                        double newCorrection = (1 + ((computeDistanceBetween(nns,nnd)/1000) * 0.045 )) * computeDistanceBetween(nns, nnd) * 1.45;
+                        double d = (computeDistanceBetween(nns,nnd)/1000)*0.00375;
+                        Log.d("dstc",newCorrection+"");
+                        distance_between_nns_and_nnd = (int) ((0.51+(4.0*d)) * distance_between_nns_and_nnd_dijkstra + (0.345-(5.2*d)) * for_correction_between_nns_and_nnd + (0.145+(1.2*d)) * newCorrection);
+                        Log.d("d", String.valueOf(d));
                         Log.d("result", String.valueOf(distance_between_nns_and_nnd));
 
                         minute_from_nns_to_nnd = distance_between_nns_and_nnd / 280;
@@ -545,10 +662,8 @@ public class MainActivity extends AppCompatActivity
                         //데이터 저장
                         setInformation();
 
-
-                        출처: https://taetanee.tistory.com/entry/안드로이드-구글맵-선-그리기 [좋은 정보]
-
                         Toast.makeText(getApplicationContext(), "목적지가 설정되었습니다.", Toast.LENGTH_LONG).show();
+                        end_point_set = true;
                     }
                 });
         builder.setNegativeButton("아니오",
@@ -691,7 +806,7 @@ public class MainActivity extends AppCompatActivity
         markerOptions.snippet(markerSnippet);
         markerOptions.draggable(true);
 
-        currentMarker = mMap.addMarker(markerOptions);
+        if (!init) {currentMarker = mMap.addMarker(markerOptions);}
         if (!init) {
             CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(currentLatLng);
             mMap.moveCamera(cameraUpdate);
