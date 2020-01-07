@@ -865,7 +865,7 @@ public class MainActivity extends AppCompatActivity
     public void setDefaultLocation() {
 
         //디폴트 위치, Seoul
-        LatLng DEFAULT_LOCATION = new LatLng(37.56, 126.97);
+        LatLng DEFAULT_LOCATION = new LatLng(36.374160, 127.365790);
         String markerTitle = "위치정보 가져올 수 없음";
         String markerSnippet = "위치 퍼미션과 GPS 활성 요부 확인하세요";
 

@@ -22,7 +22,7 @@
             android:gravity="center"
             android:paddingTop="8dp"
             android:layout_marginStart="100sp"
-            android:text="타슈타슈"
+            android:text="타슈어때"
             android:textSize="25dp"
             android:fontFamily="@font/bmfont"
             android:textColor="@android:color/white" />
