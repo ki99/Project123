@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/info"
-        android:icon="@drawable/ic_launcher_foreground"
+        android:icon="@drawable/ic_magnifier"
         android:title="Item"
         app:showAsAction="always" />
 

@@ -22,6 +22,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -41,6 +42,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 import com.facebook.Profile;
 import com.facebook.login.LoginManager;
+import com.facebook.login.widget.ProfilePictureView;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -65,6 +67,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,7 +117,7 @@ public class MainActivity extends AppCompatActivity
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
     private Toolbar toolbar;
-    ImageView imageView;
+    ProfilePictureView profileView;
     TextView textName;
     TextView textEmail;
 
@@ -283,6 +286,7 @@ public class MainActivity extends AppCompatActivity
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mNavigationView = (NavigationView) findViewById(R.id.nav_view);
         Log.d("drawer_main", mDrawerLayout+"");
@@ -311,7 +315,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         View header = mNavigationView.getHeaderView(0);
-        imageView = header.findViewById(R.id.profile);
+        profileView = header.findViewById(R.id.profile);
         textName = header.findViewById(R.id.name);
 
         setProfile();
@@ -355,13 +359,30 @@ public class MainActivity extends AppCompatActivity
 
     private void setProfile() {
         Profile prof = getCurrentProfile();
-        Uri image = prof.getProfilePictureUri(10, 10);
+        Uri image = prof.getProfilePictureUri(200, 200);
+        Log.d("profileimage", image+"");
         String name = prof.getName();
         Log.d("profile", textName+"");
         Log.d("profile", name);
-        imageView.setImageURI(image);
+        profileView.setProfileId(Profile.getCurrentProfile().getId());
         textName.setText(name);
     }
+
+    private Bitmap getbitmapfromuri(Uri uri) {
+        Bitmap bitmap = null;
+        try {
+            bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

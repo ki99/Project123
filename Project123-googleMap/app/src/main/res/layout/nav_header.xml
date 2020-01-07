@@ -12,23 +12,22 @@
     android:paddingBottom="20dp"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
-    <ImageView
+    <com.facebook.login.widget.ProfilePictureView
         android:id="@+id/profile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="image"
-        android:paddingTop="8dp"
-        app:srcCompat="@mipmap/ic_launcher_round" />
+        android:paddingTop="8dp" />
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="8dp"
-        android:layout_marginEnd="15dp"
-        android:id="@+id/name"
-        android:text="name"
-        android:textSize="20dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+    android:layout_height="wrap_content"
+    android:paddingTop="8dp"
+    android:layout_marginEnd="15dp"
+    android:id="@+id/name"
+    android:text="name"
+    android:textSize="20dp"
+    android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
     <TextView
         android:layout_width="match_parent"

@@ -41,12 +41,13 @@ public class LoginActivity extends AppCompatActivity {
 
         setContentView(R.layout.login);
         ImageView iv = findViewById(R.id.mainimage);
-        iv.setImageResource(R.drawable.main);
+       // iv.setImageResource(R.drawable.main);
         callbackManager = CallbackManager.Factory.create();
         LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
+                //GraphRequest request = GraphRequest.newMeRequest(acc)
                 //requestUserProfile(loginResult);
                 Toast.makeText(getApplicationContext(),"Login Success", Toast.LENGTH_SHORT).show();
             }
@@ -71,26 +72,15 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-/*    public void requestUserProfile(LoginResult loginResult){
+    public void requestUserProfile(LoginResult loginResult){
         GraphRequest request = GraphRequest.newMeRequest(
                 loginResult.getAccessToken(),
                 new GraphRequest.GraphJSONObjectCallback() {
                     @Override
                     public void onCompleted(JSONObject object, GraphResponse response) {
                         try {
-                            String name = response.getJSONObject().getString("name").toString();
                             String email = response.getJSONObject().getString("email").toString();
                             Log.d("Result", email);
-                            ImageView myImage = (ImageView)findViewById(R.id.facebookImage);
-
-                            URL url = new URL("https://graph.facebook.com/"+userId+"/picture");
-                            URLConnection conn = url.openConnection();
-                            conn.connect();
-                            BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
-                            Bitmap bm = BitmapFactory.decodeStream(bis);
-                            bis.close();
-                            myImage.setImageBitmap(bm);
-
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -101,7 +91,7 @@ public class LoginActivity extends AppCompatActivity {
         parameters.putString("fields", "email");
         request.setParameters(parameters);
         request.executeAsync();
-    }*/
+    }
 
 }
 /*    requestMe(loginResult.getAccessToken());

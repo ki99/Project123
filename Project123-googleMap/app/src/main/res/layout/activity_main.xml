@@ -11,9 +11,22 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        app:popupTheme="@style/AppTheme.PopupOverlay" />
+        android:layout_height="60dp"
+        android:background="@android:color/black">
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            android:gravity="center"
+            android:paddingTop="8dp"
+            android:layout_marginStart="100sp"
+            android:text="타슈타슈"
+            android:textSize="25dp"
+            android:fontFamily="@font/bmfont"
+            android:textColor="@android:color/white" />
+    </androidx.appcompat.widget.Toolbar>
 
     <fragment
         android:id="@+id/map"
