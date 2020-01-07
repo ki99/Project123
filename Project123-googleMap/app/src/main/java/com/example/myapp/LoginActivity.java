@@ -2,6 +2,9 @@ package com.example.myapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
@@ -18,6 +21,7 @@ import com.facebook.FacebookException;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import android.content.Intent;
+import android.view.animation.AnimationSet;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -34,14 +38,15 @@ import java.security.NoSuchAlgorithmException;
 public class LoginActivity extends AppCompatActivity {
 
     private CallbackManager callbackManager;
+    ImageView small, middle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.login);
-        ImageView iv = findViewById(R.id.mainimage);
        // iv.setImageResource(R.drawable.main);
+        small = findViewById(R.id.bike1);
+        middle = findViewById(R.id.bike2);
         callbackManager = CallbackManager.Factory.create();
         LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
@@ -62,6 +67,28 @@ public class LoginActivity extends AppCompatActivity {
                 Log.e("LoginErr", error.toString());
             }
         });
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        handleAnimation();
+    }
+
+
+    private void handleAnimation() {
+        ObjectAnimator animator1 = ObjectAnimator.ofFloat(small, "translationX", -600);
+        animator1.setDuration(6000);
+        animator1.setRepeatCount(ValueAnimator.INFINITE);
+        animator1.setRepeatMode(ValueAnimator.REVERSE);
+
+        ObjectAnimator animator2 = ObjectAnimator.ofFloat(middle, "translationY", -2000);
+        animator2.setDuration(6000);
+        animator2.setRepeatCount(ValueAnimator.INFINITE);
+        animator2.setRepeatMode(ValueAnimator.REVERSE);
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(animator1, animator2);
+        set.start();
     }
 
     @Override

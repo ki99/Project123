@@ -80,7 +80,7 @@ import static java.sql.Types.DOUBLE;
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback,
-        ActivityCompat.OnRequestPermissionsResultCallback {
+        ActivityCompat.OnRequestPermissionsResultCallback, GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
     private Marker currentMarker = null;
@@ -136,6 +136,7 @@ public class MainActivity extends AppCompatActivity
     static boolean end_point_set = false;
 
     MenuItem money ;
+    MenuItem taxi ;
     MenuItem total_time ;
     MenuItem total_dist;
     MenuItem calory ;
@@ -296,6 +297,7 @@ public class MainActivity extends AppCompatActivity
 
         Menu menu = mNavigationView.getMenu();
         money = menu.findItem(R.id.money);
+        taxi = menu.findItem(R.id.taxi);
         total_time = menu.findItem(R.id.total_time);
         total_dist = menu.findItem(R.id.total_dist);
         calory = menu.findItem(R.id.calory);
@@ -344,7 +346,8 @@ public class MainActivity extends AppCompatActivity
                             .icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
 
                     // 2. 마커 생성 (마커를 나타냄)
-                    mMap.addMarker(makerOptions);
+                    Marker marker = mMap.addMarker(makerOptions);
+                    marker.setTag(pull_List.get(idx));
                 }
                 Toast.makeText(getApplicationContext(), "초기화가 완료되었습니다.", Toast.LENGTH_LONG).show();
                 return false;
@@ -363,7 +366,8 @@ public class MainActivity extends AppCompatActivity
                     .icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
 
             // 2. 마커 생성 (마커를 나타냄)
-            mMap.addMarker(makerOptions);
+            Marker marker = mMap.addMarker(makerOptions);
+            marker.setTag(pull_List.get(idx));
         }
     }
 
@@ -411,22 +415,6 @@ public class MainActivity extends AppCompatActivity
         profileView.setProfileId(Profile.getCurrentProfile().getId());
         textName.setText(name);
     }
-
-    private Bitmap getbitmapfromuri(Uri uri) {
-        Bitmap bitmap = null;
-        try {
-            bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return bitmap;
-    }
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -487,6 +475,8 @@ public class MainActivity extends AppCompatActivity
                         PERMISSIONS_REQUEST_CODE);
             }
         }
+
+        mMap.setInfoWindowAdapter(new CustomMarkerInfoWindowView(getApplicationContext()));
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener(){
@@ -518,12 +508,19 @@ public class MainActivity extends AppCompatActivity
                     .icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
 
             // 2. 마커 생성 (마커를 나타냄)
-            mMap.addMarker(makerOptions);
+            Marker marker = mMap.addMarker(makerOptions);
+            marker.setTag(pull_List.get(idx));
             Log.d("eachmarker", makerOptions+"");
         } Log.d("markeradd", "end"+node_List.size());
 
+        mMap.setOnMarkerClickListener(this);
 
+    }
 
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        marker.showInfoWindow();
+        return true;
     }
 
     LocationCallback locationCallback = new LocationCallback() {
@@ -572,7 +569,8 @@ public class MainActivity extends AppCompatActivity
                                     .icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
 
                             // 2. 마커 생성 (마커를 나타냄)
-                            mMap.addMarker(makerOptions);
+                            Marker marker = mMap.addMarker(makerOptions);
+                            marker.setTag(pull_List.get(idx));
                         }
 
                         if (myMarker != null) {myMarker.remove();}
@@ -629,7 +627,8 @@ public class MainActivity extends AppCompatActivity
                                     .icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
 
                             // 2. 마커 생성 (마커를 나타냄)
-                            mMap.addMarker(makerOptions);
+                            Marker marker = mMap.addMarker(makerOptions);
+                            marker.setTag(pull_List.get(idx));
                         }
 
                         MarkerOptions mOptions1 = new MarkerOptions();
@@ -659,10 +658,6 @@ public class MainActivity extends AppCompatActivity
                         dest = new LatLng(latitude, longitude);
                         // 마커(핀) 추가
                         myMarker = googleMap.addMarker(mOptions);
-
-
-
-
 
 
 
@@ -736,6 +731,7 @@ public class MainActivity extends AppCompatActivity
         Log.d("menuitem", calory+"");
         Log.d("calorie", calorie+"");
         money.setTitle(fee+" 원");
+        taxi.setTitle(taxi_fee+ " 원");
         total_time.setTitle(total_minute+" 분");
         total_dist.setTitle(total_distance+" M");
         String cal = String.format("%.2f", calorie); //소수점 자름
