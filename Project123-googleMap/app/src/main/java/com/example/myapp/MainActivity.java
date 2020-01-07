@@ -19,6 +19,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
@@ -27,6 +28,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
 
@@ -36,6 +39,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
+import com.facebook.Profile;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -66,6 +70,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static com.facebook.Profile.getCurrentProfile;
 import static com.google.maps.android.SphericalUtil.computeDistanceBetween;
 import static java.sql.Types.DOUBLE;
 
@@ -109,6 +114,9 @@ public class MainActivity extends AppCompatActivity
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
     private Toolbar toolbar;
+    ImageView imageView;
+    TextView textName;
+    TextView textEmail;
 
     int distance_between_start_and_nns = 0;
     int minute_to_nns = 0;
@@ -301,6 +309,12 @@ public class MainActivity extends AppCompatActivity
                 return false; //false??
             }
         });
+
+        View header = mNavigationView.getHeaderView(0);
+        imageView = header.findViewById(R.id.profile);
+        textName = header.findViewById(R.id.name);
+
+        setProfile();
     }
 
     private void takefromDB() {
@@ -337,6 +351,16 @@ public class MainActivity extends AppCompatActivity
             }
         });
         queue.add(jsonArrayRequest);
+    }
+
+    private void setProfile() {
+        Profile prof = getCurrentProfile();
+        Uri image = prof.getProfilePictureUri(10, 10);
+        String name = prof.getName();
+        Log.d("profile", textName+"");
+        Log.d("profile", name);
+        imageView.setImageURI(image);
+        textName.setText(name);
     }
 
     @Override
@@ -516,7 +540,7 @@ public class MainActivity extends AppCompatActivity
 
                         double for_correction_between_nns_and_nnd = (computeDistanceBetween(nns, nnd) * 1.58);
                         Log.d("correction", String.valueOf(for_correction_between_nns_and_nnd));
-                        double newCorrection = (1 + ((computeDistanceBetween(nns,nnd)/1000) * 0.075 )) * for_correction_between_nns_and_nnd;
+                        double newCorrection = (1 + ((computeDistanceBetween(nns,nnd)/1000) * 0.06 )) * for_correction_between_nns_and_nnd;
                         distance_between_nns_and_nnd = (int) (distance_between_nns_and_nnd_dijkstra + newCorrection)/2;
                         if (get_Node_index_nearby_start_or_dest(nns) == nndidx) {
                             distance_between_nns_and_nnd = (int) (computeDistanceBetween(nns, nnd) * 1.2);
@@ -575,7 +599,8 @@ public class MainActivity extends AppCompatActivity
         money.setTitle(fee+" 원");
         total_time.setTitle(total_minute+" 분");
         total_dist.setTitle(total_distance+" M");
-        calory.setTitle(calorie+" Kcal");
+        String cal = String.format("%.2f", calorie); //소수점 자름
+        calory.setTitle(cal+" Kcal");
         first_time.setTitle(minute_to_nns+" 분");
         first_dist.setTitle(distance_between_start_and_nns+" M");
         second_time.setTitle(minute_from_nns_to_nnd+" 분");

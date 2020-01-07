@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import android.util.Base64;
@@ -16,11 +18,13 @@ import com.facebook.FacebookException;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import android.content.Intent;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.MessageDigest;
@@ -36,45 +40,14 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.login);
+        ImageView iv = findViewById(R.id.mainimage);
+        iv.setImageResource(R.drawable.main);
         callbackManager = CallbackManager.Factory.create();
         LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                GraphRequest graphRequest = GraphRequest.newMeRequest(loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
-                    @Override
-                    public void onCompleted(JSONObject object, GraphResponse response) {
-                        try {
-/*                            String email = object.getString("email");       // 이메일
-                            String name = object.getString("name");         // 이름
-                            String gender = object.getString("gender");     // 성별
-
-                            String userId = object.getString("id");   //id
-
-                            ImageView myImage = (ImageView)findViewById(R.id.facebookImage);
-
-                            URL url = new URL("https://graph.facebook.com/"+userId+"/picture");
-                            URLConnection conn = url.openConnection();
-                            conn.connect();
-                            BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
-                            Bitmap bm = BitmapFactory.decodeStream(bis);
-                            bis.close();
-                            myImage.setImageBitmap(bm);
-
-                            Log.d("TAG","페이스북 이메일 -> " + email);
-                            Log.d("TAG","페이스북 이름 -> " + name);
-                            Log.d("TAG","페이스북 성별 -> " + gender);*/
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-                Bundle parameters = new Bundle();
-                parameters.putString("fields", "id,name,email,gender,birthday");
-                graphRequest.setParameters(parameters);
-                graphRequest.executeAsync();
-
+                //requestUserProfile(loginResult);
                 Toast.makeText(getApplicationContext(),"Login Success", Toast.LENGTH_SHORT).show();
             }
 
@@ -97,6 +70,38 @@ public class LoginActivity extends AppCompatActivity {
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
     }
+
+/*    public void requestUserProfile(LoginResult loginResult){
+        GraphRequest request = GraphRequest.newMeRequest(
+                loginResult.getAccessToken(),
+                new GraphRequest.GraphJSONObjectCallback() {
+                    @Override
+                    public void onCompleted(JSONObject object, GraphResponse response) {
+                        try {
+                            String name = response.getJSONObject().getString("name").toString();
+                            String email = response.getJSONObject().getString("email").toString();
+                            Log.d("Result", email);
+                            ImageView myImage = (ImageView)findViewById(R.id.facebookImage);
+
+                            URL url = new URL("https://graph.facebook.com/"+userId+"/picture");
+                            URLConnection conn = url.openConnection();
+                            conn.connect();
+                            BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
+                            Bitmap bm = BitmapFactory.decodeStream(bis);
+                            bis.close();
+                            myImage.setImageBitmap(bm);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "email");
+        request.setParameters(parameters);
+        request.executeAsync();
+    }*/
 
 }
 /*    requestMe(loginResult.getAccessToken());
