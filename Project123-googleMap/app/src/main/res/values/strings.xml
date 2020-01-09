@@ -1,7 +1,10 @@
 <resources>
-    <string name="app_name">MyApp</string>
+    <string name="app_name">타슈어때</string>
     <string name="facebook_app_key">2990696690941029</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="none">--</string>
+    <string name="tab_text_1">연락처</string>
+    <string name="tab_text_2">타슈어때</string>
 </resources>

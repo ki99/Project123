@@ -6,75 +6,84 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <item android:title="이동 정보?"
+    <item android:title="예상 경비"
         android:id="@+id/total_info">
         <menu>
             <item
                 android:id="@+id/money"
                 android:icon="@drawable/ic_money"
-                android:title="@string/app_name"/>
+                android:title="@string/none"/>
+            <item
+                android:id="@+id/taxi"
+                android:icon="@drawable/ic_taxi"
+                android:title="@string/none"/>
             <item
                 android:id="@+id/total_time"
                 android:icon="@drawable/ic_time"
-                android:title="@string/app_name" />
+                android:title="@string/none"/>
             <item
                 android:id="@+id/total_dist"
                 android:icon="@drawable/ic_distance"
-                android:title="@string/app_name" />
+                android:title="@string/none"/>
             <item
                 android:id="@+id/calory"
                 android:icon="@drawable/ic_calory"
-                android:title="@string/app_name" />
+                android:title="@string/none"/>
         </menu>
     </item>
 
-    <item android:title="출발지부터 대여소"
+    <item android:title="출발지 ~ 타슈 대여소"
         android:id="@+id/first">
         <menu>
             <item
                 android:id="@+id/first_time"
                 android:icon="@drawable/ic_time"
-                android:title="@string/app_name" />
+                android:title="@string/none"/>
             <item
                 android:id="@+id/first_dist"
                 android:icon="@drawable/ic_distance"
-                android:title="@string/app_name" />
+                android:title="@string/none"/>
         </menu>
     </item>
 
-    <item android:title="대여소부터 반납소"
+    <item android:title="타슈 대여소 ~ 타슈 반납소"
         android:id="@+id/second">
         <menu>
             <item
                 android:id="@+id/second_time"
                 android:icon="@drawable/ic_time"
-                android:title="@string/app_name" />
+                android:title="@string/none"/>
             <item
                 android:id="@+id/second_dist"
                 android:icon="@drawable/ic_distance"
-                android:title="@string/app_name"/>
+                android:title="@string/none"/>
         </menu>
     </item>
 
-    <item android:title="반납소부터 목적지"
+    <item android:title="타슈 반납소 ~ 목적지"
         android:id="@+id/third">
         <menu>
             <item
                 android:id="@+id/third_time"
                 android:icon="@drawable/ic_time"
-                android:title="@string/app_name"/>
+                android:title="@string/none"/>
             <item
                 android:id="@+id/third_dist"
                 android:icon="@drawable/ic_distance"
-                android:title="@string/app_name" />
+                android:title="@string/none"/>
         </menu>
     </item>
     <group android:checkableBehavior="single">
 
         <item
             android:id="@+id/logout"
-            android:icon="@drawable/ic_facebook"
+            android:icon="@drawable/ic_facebook_logo"
             android:title="로그아웃" />
+
+        <item
+            android:id="@+id/clear"
+            android:icon="@drawable/ic_distance"
+            android:title="초기화"/>
     </group>
 
 </menu>
